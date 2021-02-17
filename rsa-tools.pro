@@ -1,4 +1,5 @@
-QT       += core gui
+QT          += core gui
+PKGCONFIG   += openssl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -28,3 +29,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     resource.qrc
+
+unix|win32: LIBS += -lcrypto
