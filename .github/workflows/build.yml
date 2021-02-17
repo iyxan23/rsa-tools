@@ -33,3 +33,8 @@ jobs:
           install-deps: 'true'
           modules: 'openssl'
           setup-python: 'false'
+          
+      - name: Build
+        run: |
+          qmake
+          make
