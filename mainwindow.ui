@@ -44,12 +44,12 @@
             <item>
              <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Public Key</string>
+               <string>Public Key (in PEM format)</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QTextEdit" name="public_key_text"/>
+             <widget class="QPlainTextEdit" name="public_key_text"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -85,12 +85,12 @@
             <item>
              <widget class="QLabel" name="label">
               <property name="text">
-               <string>Private Key</string>
+               <string>Private Key (in PEM format)</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QTextEdit" name="private_key_text"/>
+             <widget class="QPlainTextEdit" name="private_key_text"/>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -135,7 +135,7 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QFormLayout" name="formLayout">
+           <layout class="QFormLayout" name="form_edits">
             <item row="0" column="0">
              <widget class="QLabel" name="label_3">
               <property name="text">
@@ -146,10 +146,13 @@
             <item row="0" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
-               <widget class="QLineEdit" name="lineEdit_2"/>
+               <widget class="QLineEdit" name="encrypt_input"/>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_3">
+               <widget class="QPushButton" name="encrypt_button">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -162,7 +165,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit"/>
+               <widget class="QLineEdit" name="encrypt_output"/>
               </item>
              </layout>
             </item>
@@ -176,17 +179,20 @@
             <item row="1" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout_5">
               <item>
-               <widget class="QLineEdit" name="lineEdit_3"/>
+               <widget class="QLineEdit" name="decrypt_input"/>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_4">
+               <widget class="QPushButton" name="decrypt_button">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="text">
                  <string>-&gt;</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit_4"/>
+               <widget class="QLineEdit" name="decrypt_output"/>
               </item>
              </layout>
             </item>

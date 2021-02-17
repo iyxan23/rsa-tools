@@ -20,6 +20,12 @@ private slots:
 
     void on_openfile_public_key_clicked();
 
+    void on_openfile_private_key_clicked();
+
+    void on_public_key_text_textChanged();
+
+    void on_private_key_text_textChanged();
+
 private:
     Ui::MainWindow *ui;
 };
