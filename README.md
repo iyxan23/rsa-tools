@@ -1,2 +1,4 @@
-# rsa-tools
-My first ever C/C++ Qt project, Encrypt and Decrypt using RSA with GUI!
+# RSA Tools
+Cross-platform tool to do encryption and decryption in RSA, written in C/C++ with Qt Framework.
+
+I created this project to learn on how to use OpenSSL, the Qt framework and C/C++. Every bits of code are extremely commented, so you may want to use this project as a learning material too.
