@@ -34,7 +34,8 @@ jobs:
           modules: 'openssl'
           setup-python: 'false'
           
-      - name: Build
-        run: |
-          qmake
-          make
+      - name: Run qmake
+        run: qmake
+        
+      - name: Run make
+        run: make
