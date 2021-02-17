@@ -26,7 +26,14 @@ private slots:
 
     void on_private_key_text_textChanged();
 
+    void on_encrypt_button_clicked();
+
+    void on_decrypt_button_clicked();
+
 private:
     Ui::MainWindow *ui;
+
+    bool public_key_exists;
+    bool private_key_exists;
 };
 #endif // MAINWINDOW_H

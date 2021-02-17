@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 // Qt Libraries
+#include <QtCore>
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -100,9 +101,15 @@ void MainWindow::on_public_key_text_textChanged() {
     if (ui->public_key_text->toPlainText().trimmed() == "") {
         // Empty, disable the button
         ui->encrypt_button->setEnabled(false);
+
+        // The public key doesn't exists
+        public_key_exists = false;
     } else {
         // Something is there, enable it
         ui->encrypt_button->setEnabled(true);
+
+        // The public key exists!
+        public_key_exists = true;
     }
 }
 
@@ -112,8 +119,177 @@ void MainWindow::on_private_key_text_textChanged() {
     if (ui->private_key_text->toPlainText().trimmed() == "") {
         // Empty, disable the button
         ui->decrypt_button->setEnabled(false);
+
+        // The private key doesn't exists
+        private_key_exists = false;
     } else {
         // Something is there, enable it
         ui->decrypt_button->setEnabled(true);
+
+        // The private key exists!
+        private_key_exists = true;
     }
+}
+
+void MainWindow::on_encrypt_button_clicked() {
+    // Encrypt the text!
+
+    // Get the public key
+    QByteArray public_key = ui->public_key_text->toPlainText().toUtf8();
+
+    // Put it in a BIO
+    BIO* bio = BIO_new_mem_buf(public_key, -1);
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+
+    // Then read the bio to get the public key
+
+    /* Some Important notes to remember:
+     * PEM_read_RSAPublicKey -> Read public key from a FILE in PKCS#1 Format, (in openssl command line, to generate that, use the `-outform DER` parameter)
+     * PEM_read_RSA_PUBKEY -> Read public key from a FILE in PEM format, this is what we want.
+     *
+     * same goes on with bio, but with bio, it'll read from the bio, not from a file
+     *
+     * Source: https://stackoverflow.com/questions/7818117/why-i-cant-read-openssl-generated-rsa-pub-key-with-pem-read-rsapublickey
+     */
+    RSA *pubkey = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
+
+    // Free the BIO
+    BIO_free(bio);
+
+    // If pubkey doesn't exists / failed to get
+    if (!pubkey) {
+        QMessageBox box;
+
+        QByteArray message = "Failed to parse the public key: ";
+        message.append(ERR_error_string(ERR_get_error(), NULL));
+
+        box.setText(message);
+        box.exec();
+
+        return; // Abort mission!
+    }
+
+    // Finally, we can encrypt the string
+    // First, get the string
+    QString data_to_encrypt = ui->encrypt_input->text();
+
+    // Second, get the RSA length
+    int rsaLen = RSA_size(pubkey);
+
+    // Third, encrypt it
+    unsigned char* result_ = (unsigned char*) malloc(rsaLen);
+    unsigned char* payload_buf = (unsigned char*) data_to_encrypt.toLocal8Bit().constData();
+
+    // We're going to use PKCS1 OAEP Padding
+    int encrypted_length = RSA_public_encrypt(data_to_encrypt.length() - 1, payload_buf, result_, pubkey, RSA_PKCS1_OAEP_PADDING);
+
+    // Check if it fails
+    if (encrypted_length == -1) {
+        // meh it failed
+        // Show a message box
+        QMessageBox box;
+
+        QByteArray message = "Failed to encrypt: ";
+        message.append(ERR_error_string(ERR_get_error(), NULL));
+
+        box.setText(message);
+        box.exec();
+
+        return; // Abort mission!
+    }
+
+    // Save the result to a QByteArray
+    QByteArray result((char*) result_);
+
+    qDebug() << result;
+
+    // Oh yeah, free the result_, we don't want memory leaks
+    free(result_);
+
+    /* Finally, fourth, set the lineEdit to the encrypted text in base64 form
+     *
+     * Why base64? It's because this encrypted form is a random jumbled binary,
+     * we want to make this easier to copy, so encode it in base64
+     */
+    ui->encrypt_output->setText(result.toBase64());
+}
+
+void MainWindow::on_decrypt_button_clicked() {
+    // Decrypt the text!
+
+    // Get the private key
+    QByteArray private_key = ui->private_key_text->toPlainText().toUtf8();
+
+    // Put it in a BIO
+    BIO* bio = BIO_new_mem_buf(private_key, -1);
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+
+    // Then read the bio to get the public key
+    RSA *prikey = PEM_read_bio_RSAPrivateKey(bio, NULL, NULL, NULL);
+
+    // Free the BIO
+    BIO_free(bio);
+
+    // If prikey doesn't exists / failed to get
+    if (!prikey) {
+        QMessageBox box;
+
+        QByteArray message = "Failed to parse the private key: ";
+        message.append(ERR_error_string(ERR_get_error(), NULL));
+
+        box.setText(message);
+        box.exec();
+
+        return; // Abort mission!
+    }
+
+    // BUG: There are some funky sutff while converting from unsigned char* -> char* -> Base64 -> char* -> unsigned char*
+
+    // Finally, we can decrypt the string
+    // First, get the string (don't forget to decode it in base64)
+    QByteArray data_to_decrypt = QByteArray::fromBase64(ui->decrypt_input->text().toUtf8());
+
+    qDebug() << data_to_decrypt;
+
+    // Second, get the RSA length
+    int rsaLen = RSA_size(prikey);
+
+    // Third, decrypt it
+    unsigned char* result_ = (unsigned char*) malloc(rsaLen);
+    unsigned char* payload_buf = (unsigned char*) data_to_decrypt.constData();
+
+    QByteArray d((char*) payload_buf);
+
+    qDebug() << d;
+
+    // We're going to use PKCS1 OAEP Padding
+    int encrypted_length = RSA_private_decrypt(data_to_decrypt.length() - 1, payload_buf, result_, prikey, RSA_PKCS1_OAEP_PADDING);
+
+    // Check if it fails
+    if (encrypted_length == -1) {
+        // meh it failed
+        // Show a message box
+        QMessageBox box;
+
+        QByteArray message = "Failed to decrypt: ";
+        message.append(ERR_error_string(ERR_get_error(), NULL));
+
+        box.setText(message);
+        box.exec();
+
+        return; // Abort mission!
+    }
+
+    // Save the result to a QByteArray
+    QByteArray result((char*) result_);
+
+    // Oh yeah, free the result_, we don't want memory leaks
+    free(result_);
+
+    /* Finally, fourth, set the lineEdit to the encrypted text in base64 form
+     *
+     * Why base64? It's because this encrypted form is a random jumbled binary,
+     * we want to make this easier to copy, so encode it in base64
+     */
+    ui->decrypt_output->setText(result.toBase64());
 }
