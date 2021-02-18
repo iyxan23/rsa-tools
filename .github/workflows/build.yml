@@ -33,3 +33,9 @@ jobs:
           install-deps: 'true'
           modules: 'openssl'
           setup-python: 'false'
+          
+      - name: Run qmake
+        run: qmake
+        
+      - name: Run make
+        run: make
