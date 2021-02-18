@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QDir>
+#include <QInputDialog>
 
 // OpenSSL Libraries
 #include <openssl/crypto.h>
@@ -15,6 +16,7 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
+#include <openssl/bn.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
