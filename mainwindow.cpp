@@ -203,6 +203,8 @@ void MainWindow::on_encrypt_button_clicked() {
         box.setText(message);
         box.exec();
 
+        free(result_);
+
         return; // Abort mission!
     }
 
@@ -284,6 +286,8 @@ void MainWindow::on_decrypt_button_clicked() {
 
         box.setText(message);
         box.exec();
+
+        free(result_);
 
         return; // Abort mission!
     }
