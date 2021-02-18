@@ -299,3 +299,104 @@ void MainWindow::on_decrypt_button_clicked() {
      */
     ui->decrypt_output->setText(result.toBase64());
 }
+
+void MainWindow::on_pushButton_clicked() {
+    // Make the user choose how big the key will be
+    QStringList items;
+    items << "512" << "1024" << "2048" << "4096";
+
+    bool ok;
+    QString item = QInputDialog::getItem(this, tr("Key Size"),
+                                             tr("Choose a key size:"), items, 0, false, &ok);
+
+    // Check if this is not ok
+    if (!ok) {
+        qCritical() << "QInputDialog::getItem is not okay";
+
+        QMessageBox box;
+        box.setText("Failed to show a QInputDialog, unknown reason.");
+        box.exec();
+
+        return;
+    }
+
+    // Get the key length
+    int key_length = atoi(item.toUtf8());
+
+    // Create a file object, used to store these temporary files
+    FILE *fp;
+
+    // Create a bignumber (this should be a prime number)
+    BIGNUM *e = BN_new();
+    BN_dec2bn(&e, "8191");
+
+    // And generate a key pair
+    RSA *keypair = RSA_new();
+    RSA_generate_key_ex(keypair, key_length, e, NULL);
+
+    // Free the bignumber
+    BN_free(e);
+
+
+    // Get the public key path, this should be in a temporary directory
+    QByteArray pub_path = QDir::tempPath().toUtf8();
+    pub_path.append("/public_key");
+
+    // Open the path and write to it
+    fp = fopen(pub_path, "w");
+    PEM_write_RSAPublicKey(fp, keypair);
+    // Oh yeah close it
+    fclose(fp);
+
+
+    // Get the private key path, this should be in a temporary directory
+    QByteArray pri_path = QDir::tempPath().toUtf8();
+    pri_path.append("/private_key");
+
+    // Open it, and write the private key in it
+    fp = fopen(pri_path, "w");
+    PEM_write_RSAPrivateKey(fp, keypair, NULL, NULL, NULL, NULL, NULL);
+    // Then close it
+    fclose(fp);
+
+    // Free some stuff
+    RSA_free(keypair);
+
+
+    // Read those files
+    QFile pub(pub_path);
+    QFile pri(pri_path);
+
+    // Open them
+    if (!pub.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox box;
+        box.setText("Failed to open file");
+        box.exec();
+
+        return;
+    }
+
+    if (!pri.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox box;
+        box.setText("Failed to open file");
+        box.exec();
+
+        return;
+    }
+
+    // Read them
+    QByteArray public_key = pub.readAll();
+    QByteArray private_key = pri.readAll();
+
+    // Close the files
+    pub.close();
+    pri.close();
+
+    // Set the public key text and private key text to be these
+    ui->public_key_text->insertPlainText(public_key);
+    ui->private_key_text->insertPlainText(private_key);
+
+    // aaand, remove the files
+    QFile::remove(pub_path);
+    QFile::remove(pri_path);
+}
