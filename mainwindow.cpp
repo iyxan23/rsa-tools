@@ -186,8 +186,8 @@ void MainWindow::on_encrypt_button_clicked() {
     unsigned char* result_ = (unsigned char*) malloc(rsaLen);
     unsigned char* payload_buf = (unsigned char*) data_to_encrypt.toLocal8Bit().constData();
 
-    // We're going to use PKCS1 OAEP Padding
-    int encrypted_length = RSA_public_encrypt(data_to_encrypt.length() - 1, payload_buf, result_, pubkey, RSA_PKCS1_OAEP_PADDING);
+    // We're going to use PKCS1 Padding
+    int encrypted_length = RSA_public_encrypt(data_to_encrypt.length() - 1, payload_buf, result_, pubkey, RSA_PKCS1_PADDING);
 
     // Check if it fails
     if (encrypted_length == -1) {
@@ -268,8 +268,8 @@ void MainWindow::on_decrypt_button_clicked() {
 
     qDebug() << d;
 
-    // We're going to use PKCS1 OAEP Padding
-    int encrypted_length = RSA_private_decrypt(data_to_decrypt.length() - 1, payload_buf, result_, prikey, RSA_PKCS1_OAEP_PADDING);
+    // We're going to use PKCS1 Padding
+    int encrypted_length = RSA_private_decrypt(data_to_decrypt.length() - 1, payload_buf, result_, prikey, RSA_PKCS1_PADDING);
 
     // Check if it fails
     if (encrypted_length == -1) {
