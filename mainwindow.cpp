@@ -145,13 +145,19 @@ void MainWindow::on_encrypt_button_clicked() {
 
     /* Some Important notes to remember:
      * PEM_read_RSAPublicKey -> Read public key from a FILE in PKCS#1 Format, (in openssl command line, to generate that, use the `-outform DER` parameter)
-     * PEM_read_RSA_PUBKEY -> Read public key from a FILE in PEM format, this is what we want.
+     * PEM_read_RSA_PUBKEY -> Read public key from a FILE in PEM format.
      *
      * same goes on with bio, but with bio, it'll read from the bio, not from a file
      *
      * Source: https://stackoverflow.com/questions/7818117/why-i-cant-read-openssl-generated-rsa-pub-key-with-pem-read-rsapublickey
      */
-    RSA *pubkey = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
+    RSA* pubkey;
+    try {
+        pubkey = PEM_read_bio_RSAPublicKey(bio, NULL, NULL, NULL);
+    } catch (std::exception &e) {
+        // something is funky, use PEM_read_bio_RSA_PUBKEY instead
+        pubkey = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
+    }
 
     // Free the BIO
     BIO_free(bio);
